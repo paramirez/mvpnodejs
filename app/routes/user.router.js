@@ -5,8 +5,6 @@ import authenticateService from '../modules/users/services/authenticate.service'
 
 const userRouter = Router();
 
-userRouter.post('/login', authenticateService.login);
-
 userRouter.use(authenticateService.authenticate);
 
 userRouter.route('/')
@@ -17,15 +15,16 @@ userRouter.route('/all')
     .get(userController.allUsers);
 
 userRouter.route('/rols')
-    .get(rolController.listRols)
-    .post(rolController.newRol);
+    .get(rolController.getAllRols)
+    .post(rolController.createRol);
 
 userRouter.route('/rols/disable')
-    .get(rolController.listRolsDisables);
+    .get(rolController.getAllRolsDisabled);
+
+userRouter.put('/rols/active/:rolId', rolController.activeRol);
 
 userRouter.route('/rols/:rolId')
-    .get(rolController.viewRol)
-    .put()
-    .delete(rolController.deleteRol);
+    .get(rolController.findRolById)
+    .delete(rolController.disableRol);
 
 export default userRouter;

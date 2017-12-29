@@ -24,7 +24,11 @@ async function newUser(req, res) {
         user = await user.save();
         res.json(user);
     } catch (error) {
-        res.status(500).json(error);
+        if (error.code === 11000) {
+            res.status(400).json({ code: error.code, message: 'Duplicate field' });
+        } else {
+            res.status(500).json(error);
+        }
     }
 };
 

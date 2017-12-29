@@ -12,7 +12,7 @@ async function login(req, res, next) {
                 match: { active: true }
             });
         if (!user) {
-            res.status(401).json({ message: `Access invalidate` });
+            res.status(401).json({ message: `Email invalidate` });
         } else {
             if (bcrypt.compareSync(req.body.password, user.password)) {
                 if (user.rol === null || user.active === false) {

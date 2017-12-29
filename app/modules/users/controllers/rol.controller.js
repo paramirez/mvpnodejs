@@ -1,72 +1,54 @@
-import rolService from '../services/rol.service';
+import rolModel from '../models/rol.model';
 
-function newRol(req, res, next) {
-    let name = req.body.name;
-    rolService.createRol({ name })
-        .then(rol => {
-            res.json({ name: `Rol ${rol.name} created!` });
-        })
-        .catch(err => {
-            res.status(500).json(err);
-        });
+async function createRol(req, res) {
+    try {
+        let rol = new rolModel(req.body);
+        rol = await rol.save();
+        res.status(200).json({message: 'Rol created'});
+    } catch (error) {
+        res.status(500).json(error);
+    }
 };
 
-function listRols(req, res, next) {
-    rolService.getAllRols()
-        .then(list => {
-            res.json(list);
-        })
-        .catch(err => {
-            res.status(500).json(err);
-        });
+async function getAllRols(req, res) {
+    const listRols = await rolModel.find({ active: true }, 'name _id active');
+    res.json(listRols);
 };
 
-function deleteRol(req, res, next) {
-    rolService.disableRol(req.params.rolId)
-        .then(rol => {
-            res.json({ message: 'Rol removed!' });
-        })
-        .catch(err => {
-            res.status(500).json(err);
-        });
+async function getAllRolsDisabled(req, res) {
+    const listRols = await rolModel.find({ active: false }, 'name _id active');
+    res.json(listRols);
 };
 
-function activeRol(req, res, next) {
-    rolService.disableRol(req.params.rolId)
-        .then(rol => {
-            res.json({ message: 'Rol removed!' });
-        })
-        .catch(err => {
-            res.status(500).json(err);
-        });
+async function disableRol(req, res) {
+    const rol = await rolModel.update({ _id: req.params.rolId, active: true }, { active: false });
+    res.sendStatus(rol ? 200 : 404);
 };
 
+async function activeRol(req, res) {
+    const rol = await rolModel.update({ _id: req.params.rolId, active: false }, { active: true });
+    res.sendStatus(rol ? 200 : 404);
+};
 
-function viewRol(req, res, next) {
-    rolService.findRolById(req.params.rolId)
-        .then(rol => {
+async function findRolById(req, res) {
+    try {
+        const rol = await rolModel.findOne({ _id: req.params.rolId, active: true });
+        if (rol) {
             res.json(rol);
-        })
-        .catch(err => {
-            if (err.name === "CastError") { res.status(404).json({ message: `Rol ${err.value} not exist` }) }
-            else { res.status(500).json(err) }
-        })
-};
-
-function listRolsDisables(req, res, next) {
-    rolService.getAllRolsDisabled()
-        .then(list => {
-            res.json(list);
-        })
-        .catch(err => {
-            res.status(500).json(err);
-        });
+        } else {
+            res.sendStatus(404);
+        }
+    } catch (error) {
+        if (error.name === "CastError") { res.sendStatus(404) }
+        else { res.status(500).json(error) }
+    }
 };
 
 export default {
-    newRol,
-    listRols,
-    listRolsDisables,
-    deleteRol,
-    viewRol
+    createRol,
+    getAllRols,
+    getAllRolsDisabled,
+    activeRol,
+    disableRol,
+    findRolById
 };
